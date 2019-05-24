@@ -29,47 +29,61 @@ PORT = 23333
 BUFSIZE = 1024
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-s.connect((HOST, PORT))
-print('send a file to', HOST, ':')
+try:
+    s.connect((HOST, PORT))
+    print('send a file to', HOST, ':')
 
-fpath = filedialog.askopenfilename(title='Open', initialdir=os.getcwd())
-f = open(fpath, 'rb')
-print('source file :', fpath)
+    fpath = filedialog.askopenfilename(title='Open', initialdir=os.getcwd())
+    f = open(fpath, 'rb')
+    print('source file :', fpath)
 
-fname = os.path.basename(fpath)
-s.sendall(fname.encode('utf-8'))
-print('sent file name :', fname)
+    fname = os.path.basename(fpath)
+    s.sendall(fname.encode('utf-8'))
+    print('sent file name :', fname)
 
-fsize = os.path.getsize(fpath)
-s.sendall(str(fsize).encode('utf-8'))
-print('sent file size :', suffix(fsize))
+    fsize = os.path.getsize(fpath)
+    s.sendall(str(fsize).encode('utf-8'))
+    print('sent file size :', suffix(fsize))
 
-fhash = hashlib.sha1()
-while True:
-    data = f.read(BUFSIZE)
-    if not data:
-        break
-    fhash.update(data)
-fhash = str(fhash.hexdigest())
-s.sendall(fhash.encode('utf-8'))
-print('sent file SHA-1 :', fhash)
-f.close()
+    fhash = hashlib.sha1()
+    while True:
+        data = f.read(BUFSIZE)
+        if not data:
+            break
+        fhash.update(data)
+    fhash = str(fhash.hexdigest())
+    s.sendall(fhash.encode('utf-8'))
+    print('sent file SHA-1 :', fhash)
+    f.close()
+
+except (FileNotFoundError, ConnectionError):
+    print('transmission failed')
+    s.close()
+    exit()
 
 ssize = 0
 per = 0
 t0 = time.perf_counter()
 
-f = open(fpath, 'rb')
-while True:
-    data = f.read(BUFSIZE)
-    if not data:
-        break
-    s.sendall(data)
-    if fsize - ssize > BUFSIZE:
-        ssize += BUFSIZE
-    else:
-        ssize = fsize
-    print('\r', '{:.2f}'.format(ssize / fsize * 100), '%', end='')
+try:
+    f = open(fpath, 'rb')
+    while True:
+        data = f.read(BUFSIZE)
+        if not data:
+            break
+        s.sendall(data)
+        if fsize - ssize > BUFSIZE:
+            ssize += BUFSIZE
+        else:
+            ssize = fsize
+        print('\r', '{:.2f}'.format(ssize / fsize * 100), '%', end='')
+
+except ConnectionError:
+    print()
+    f.close()
+    print('transmission failed')
+    s.close()
+    exit()
 
 print()
 t1 = time.perf_counter()
