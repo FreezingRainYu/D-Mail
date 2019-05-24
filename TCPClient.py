@@ -40,10 +40,12 @@ try:
     fname = os.path.basename(fpath)
     s.sendall(fname.encode('utf-8'))
     print('sent file name :', fname)
+    time.sleep(0.1)
 
     fsize = os.path.getsize(fpath)
     s.sendall(str(fsize).encode('utf-8'))
     print('sent file size :', suffix(fsize))
+    time.sleep(0.1)
 
     fhash = hashlib.sha1()
     while True:
@@ -56,16 +58,10 @@ try:
     print('sent file SHA-1 :', fhash)
     f.close()
 
-except (FileNotFoundError, ConnectionError):
-    print('transmission failed')
-    s.close()
-    exit()
+    ssize = 0
+    per = 0
+    t0 = time.perf_counter()
 
-ssize = 0
-per = 0
-t0 = time.perf_counter()
-
-try:
     f = open(fpath, 'rb')
     while True:
         data = f.read(BUFSIZE)
@@ -78,19 +74,18 @@ try:
             ssize = fsize
         print('\r', '{:.2f}'.format(ssize / fsize * 100), '%', end='')
 
-except ConnectionError:
     print()
+    t1 = time.perf_counter()
+    dt = t1 - t0
+    rate = fsize / dt
+    print('time :', dt, 's')
+    print('average rate :', suffix(rate), '/ s')
     f.close()
+
+    s.close()
+
+except (FileNotFoundError, ConnectionError):
+    print()
     print('transmission failed')
     s.close()
     exit()
-
-print()
-t1 = time.perf_counter()
-dt = t1 - t0
-rate = fsize / dt
-print('time :', dt, 's')
-print('average rate :', suffix(rate), '/ s')
-f.close()
-
-s.close()
