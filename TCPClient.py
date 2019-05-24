@@ -81,6 +81,8 @@ try:
     print('time :', dt, 's')
     print('average rate :', suffix(rate), '/ s')
     f.close()
+    fstat = s.recv(BUFSIZE).decode('utf-8')
+    print(fstat)
 
     s.close()
 

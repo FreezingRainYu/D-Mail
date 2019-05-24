@@ -100,9 +100,11 @@ while True:
     f.close()
     if fhash0 == fhash1:
         print('data check succeeded')
+        c.sendall('transmission succeed'.encode('utf-8'))
     else:
         os.remove(fpath)
         print('data check failed')
+        c.sendall('data check failed'.encode('utf-8'))
 
     c.close()
     print()
