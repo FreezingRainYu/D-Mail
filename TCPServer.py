@@ -43,18 +43,18 @@ while True:
         fsize = int(str(c.recv(BUFSIZE).decode('utf-8')))
         print('received file size :', suffix(fsize))
 
-        fhash0 = c.recv(BUFSIZE).decode('utf-8')
-        print('received file SHA-1 :', fhash0)
+        recvhash = c.recv(BUFSIZE).decode('utf-8')
+        print('received file SHA-1 :', recvhash)
 
     except (ValueError, ConnectionError):
-        print('transmission failed')
+        print('transmission failed : argument initialization failed')
         c.close()
         print()
         continue
 
     fpath = filedialog.askdirectory(title='Save', initialdir=os.getcwd()) + '/' + fname
     f = open(fpath, 'wb')
-    print('save as :', fpath)
+    print('destination path :', fpath)
 
     rsize = 0
     per = 0
@@ -75,7 +75,7 @@ while True:
         print()
         f.close()
         os.remove(fpath)
-        print('transmission failed')
+        print('transmission failed : client connection interrupted')
         c.close()
         print()
         continue
@@ -84,27 +84,27 @@ while True:
     t1 = time.perf_counter()
     dt = t1 - t0
     rate = fsize / dt
-    print('time :', dt, 's')
+    print('time :', '{:.6f}'.format(dt), 's')
     print('average rate :', suffix(rate), '/ s')
     f.close()
 
     f = open(fpath, 'rb')
-    fhash1 = hashlib.sha1()
+    calchash = hashlib.sha1()
     while True:
         data = f.read(BUFSIZE)
         if not data:
             break
-        fhash1.update(data)
-    fhash1 = str(fhash1.hexdigest())
-    print('calculated file SHA-1 :', fhash1)
+        calchash.update(data)
+    calchash = str(calchash.hexdigest())
+    print('calculated file SHA-1 :', calchash)
     f.close()
-    if fhash0 == fhash1:
-        print('data check succeeded')
-        c.sendall('transmission succeed'.encode('utf-8'))
+    if recvhash == calchash:
+        print('data check succeeded, transmission succeeded')
+        c.sendall('transmission succeeded'.encode('utf-8'))
     else:
         os.remove(fpath)
-        print('data check failed')
-        c.sendall('data check failed'.encode('utf-8'))
+        print('transmission failed : data check failed')
+        c.sendall('transmission failed : data check failed'.encode('utf-8'))
 
     c.close()
     print()

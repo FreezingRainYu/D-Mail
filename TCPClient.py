@@ -35,7 +35,7 @@ try:
 
     fpath = filedialog.askopenfilename(title='Open', initialdir=os.getcwd())
     f = open(fpath, 'rb')
-    print('source file :', fpath)
+    print('source path :', fpath)
 
     fname = os.path.basename(fpath)
     s.sendall(fname.encode('utf-8'))
@@ -78,7 +78,7 @@ try:
     t1 = time.perf_counter()
     dt = t1 - t0
     rate = fsize / dt
-    print('time :', dt, 's')
+    print('time :', '{:.6f}'.format(dt), 's')
     print('average rate :', suffix(rate), '/ s')
     f.close()
     fstat = s.recv(BUFSIZE).decode('utf-8')
@@ -88,6 +88,6 @@ try:
 
 except (FileNotFoundError, ConnectionError):
     print()
-    print('transmission failed')
+    print('transmission failed or cancelled')
     s.close()
     exit()
