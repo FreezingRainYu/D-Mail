@@ -26,6 +26,8 @@ root.withdraw()
 HOST = ''
 PORT = 23333
 BUFSIZE = 1024
+SPEEDRATE = 0.333
+
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
 s.listen(5)
@@ -58,10 +60,12 @@ while True:
 
     rsize = 0
     per = 0
+    speed = 0
     t0 = time.perf_counter()
 
     try:
         while not rsize == fsize:
+            t2 = time.perf_counter()
             if fsize - rsize > BUFSIZE:
                 data = c.recv(BUFSIZE)
                 f.write(data)
@@ -69,7 +73,13 @@ while True:
                 data = c.recv(fsize - rsize)
                 f.write(data)
             rsize += len(data)
-            print('\r', '{:.2f}'.format(rsize / fsize * 100), '%', end='')
+            t3 = time.perf_counter()
+            dt = t3 - t2
+            s0 = speed
+            speed = len(data) / dt
+            if s0 and abs((speed - s0) / s0) > SPEEDRATE:
+                speed = s0
+            print('\r', '{:.2f}'.format(rsize / fsize * 100), '%', suffix(speed), '/ s', end='')
 
     except ConnectionError:
         print()
@@ -83,9 +93,9 @@ while True:
     print()
     t1 = time.perf_counter()
     dt = t1 - t0
-    rate = fsize / dt
-    print('time :', '{:.6f}'.format(dt), 's')
-    print('average rate :', suffix(rate), '/ s')
+    speed = fsize / dt
+    print('total time :', '{:.6f}'.format(dt), 's')
+    print('average speed :', suffix(speed), '/ s')
     f.close()
 
     f = open(fpath, 'rb')
@@ -99,7 +109,8 @@ while True:
     print('calculated file SHA-1 :', calchash)
     f.close()
     if recvhash == calchash:
-        print('data check succeeded, transmission succeeded')
+        print('data check succeeded')
+        print('transmission succeeded')
         c.sendall('transmission succeeded'.encode('utf-8'))
     else:
         os.remove(fpath)

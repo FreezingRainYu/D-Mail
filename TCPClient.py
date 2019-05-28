@@ -27,6 +27,8 @@ root.withdraw()
 HOST = '192.168.160.129'
 PORT = 23333
 BUFSIZE = 1024
+SPEEDRATE = 0.333
+
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 try:
@@ -60,10 +62,12 @@ try:
 
     ssize = 0
     per = 0
+    speed = 0
     t0 = time.perf_counter()
 
     f = open(fpath, 'rb')
     while True:
+        t2 = time.perf_counter()
         data = f.read(BUFSIZE)
         if not data:
             break
@@ -72,14 +76,20 @@ try:
             ssize += BUFSIZE
         else:
             ssize = fsize
-        print('\r', '{:.2f}'.format(ssize / fsize * 100), '%', end='')
+        t3 = time.perf_counter()
+        dt = t3 - t2
+        s0 = speed
+        speed = len(data) / dt
+        if s0 and abs((speed - s0) / s0) > SPEEDRATE:
+            speed = s0
+        print('\r', '{:.2f}'.format(ssize / fsize * 100), '%', suffix(speed), '/ s', end='')
 
     print()
     t1 = time.perf_counter()
     dt = t1 - t0
-    rate = fsize / dt
-    print('time :', '{:.6f}'.format(dt), 's')
-    print('average rate :', suffix(rate), '/ s')
+    speed = fsize / dt
+    print('total time :', '{:.6f}'.format(dt), 's')
+    print('average speed :', suffix(speed), '/ s')
     f.close()
     fstat = s.recv(BUFSIZE).decode('utf-8')
     print(fstat)
