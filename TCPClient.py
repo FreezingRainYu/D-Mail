@@ -58,6 +58,7 @@ try:
     fhash = str(fhash.hexdigest())
     s.sendall(fhash.encode('utf-8'))
     print('sent file SHA-1 :', fhash)
+    time.sleep(0.1)
     f.close()
 
     ssize = 0

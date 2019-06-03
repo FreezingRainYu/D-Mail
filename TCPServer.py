@@ -123,5 +123,6 @@ try:
 
 except KeyboardInterrupt:
     print()
-    print('transmission failed : server closed')
+    print('server closed')
+    s.close()
     exit()
