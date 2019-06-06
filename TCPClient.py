@@ -7,17 +7,17 @@ from tkinter import filedialog
 
 
 def suffix(size):
-    k = 1024
-    m = 1024 * k
-    g = 1024 * m
-    if size < k:
+    kilo = 1024
+    mega = 1024 * kilo
+    giga = 1024 * mega
+    if size < kilo:
         return str(size) + ' B'
-    elif size < m:
-        return '{:.2f}'.format(size / k) + ' KB'
-    elif size < g:
-        return '{:.2f}'.format(size / m) + ' MB'
+    elif size < mega:
+        return '{:.2f}'.format(size / kilo) + ' KB'
+    elif size < giga:
+        return '{:.2f}'.format(size / mega) + ' MB'
     else:
-        return '{:.2f}'.format(size / g) + ' GB'
+        return '{:.2f}'.format(size / giga) + ' GB'
 
 
 root = Tk()
@@ -97,7 +97,7 @@ try:
 
     s.close()
 
-except (FileNotFoundError, ConnectionError):
+except (ConnectionError, FileNotFoundError, KeyboardInterrupt):
     print()
     print('transmission failed or cancelled')
     s.close()

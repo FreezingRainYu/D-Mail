@@ -7,17 +7,17 @@ from tkinter import filedialog
 
 
 def suffix(size):
-    k = 1024
-    m = 1024 * k
-    g = 1024 * m
-    if size < k:
+    kilo = 1024
+    mega = 1024 * kilo
+    giga = 1024 * mega
+    if size < kilo:
         return str(size) + ' B'
-    elif size < m:
-        return '{:.2f}'.format(size / k) + ' KB'
-    elif size < g:
-        return '{:.2f}'.format(size / m) + ' MB'
+    elif size < mega:
+        return '{:.2f}'.format(size / kilo) + ' KB'
+    elif size < giga:
+        return '{:.2f}'.format(size / mega) + ' MB'
     else:
-        return '{:.2f}'.format(size / g) + ' GB'
+        return '{:.2f}'.format(size / giga) + ' GB'
 
 
 root = Tk()
@@ -25,12 +25,13 @@ root.withdraw()
 
 HOST = ''
 PORT = 23333
+BACKLOG = 1
 BUFSIZE = 1024
 SPEEDRATE = 0.333
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
-s.listen(5)
+s.listen(BACKLOG)
 
 try:
     while True:
@@ -49,13 +50,21 @@ try:
             recvhash = c.recv(BUFSIZE).decode('utf-8')
             print('received file SHA-1 :', recvhash)
 
-        except (ValueError, ConnectionError):
+        except (ConnectionError, ValueError):
             print('transmission failed : argument initialization failed')
             c.close()
             print()
             continue
 
-        fpath = filedialog.askdirectory(title='Save', initialdir=os.getcwd()) + '/' + fname
+        try:
+            fpath = filedialog.askdirectory(title='Save', initialdir=os.getcwd()) + '/' + fname
+
+        except TypeError:
+            print('transmission failed : path choice closed')
+            c.close()
+            print()
+            continue
+
         f = open(fpath, 'wb')
         print('destination path :', fpath)
 
