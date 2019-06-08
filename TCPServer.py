@@ -1,3 +1,4 @@
+# Server
 import hashlib
 import os
 import socket
@@ -82,6 +83,7 @@ try:
         rsize = 0
         per = 0
         speed = 0
+        # 计时开始
         t0 = time.perf_counter()
 
         try:
@@ -94,9 +96,10 @@ try:
                 else:
                     data = c.recv(fsize - rsize)
                     f.write(data)
+                # 计算接收进度
                 rsize += len(data)
                 t3 = time.perf_counter()
-                # 计算瞬时传输速度与传输百分比
+                # 计算并刷新瞬时传输速度与传输百分比
                 dt = t3 - t2
                 s0 = speed
                 speed = len(data) / dt
@@ -104,9 +107,11 @@ try:
                     speed = s0
                 print('\r', '{:.2f}'.format(rsize / fsize * 100), '%', suffix(speed), '/ s', end='')
 
+        # 接收文件数据时连接中断
         except ConnectionError:
             print()
             f.close()
+            # 删除部分文件
             os.remove(fpath)
             print('transmission failed : client connection interrupted')
             c.close()
@@ -114,6 +119,7 @@ try:
             continue
 
         print()
+        # 计时结束
         t1 = time.perf_counter()
         # 计算文件传输时间与平均传输速度
         dt = t1 - t0
@@ -134,11 +140,14 @@ try:
         print('calculated file SHA-1 :', calchash)
         f.close()
         # 发送传输结果
+        # SHA-1 值一致
         if recvhash == calchash:
             print('data check succeeded')
             print('transmission succeeded')
             c.sendall('transmission succeeded'.encode('utf-8'))
+        # SHA-1 值不一致
         else:
+            # 删除本地文件
             os.remove(fpath)
             print('transmission failed : data check failed')
             c.sendall('transmission failed : data check failed'.encode('utf-8'))

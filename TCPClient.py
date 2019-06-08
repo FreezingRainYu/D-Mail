@@ -1,3 +1,4 @@
+# Client
 import hashlib
 import os
 import socket
@@ -73,6 +74,7 @@ try:
     ssize = 0
     per = 0
     speed = 0
+    # 计时开始
     t0 = time.perf_counter()
 
     f = open(fpath, 'rb')
@@ -89,7 +91,7 @@ try:
         else:
             ssize = fsize
         t3 = time.perf_counter()
-        # 计算瞬时传输速度与传输百分比
+        # 计算并刷新瞬时传输速度与传输百分比
         dt = t3 - t2
         s0 = speed
         speed = len(data) / dt
@@ -98,6 +100,7 @@ try:
         print('\r', '{:.2f}'.format(ssize / fsize * 100), '%', suffix(speed), '/ s', end='')
 
     print()
+    # 计时结束
     t1 = time.perf_counter()
     # 计算文件传输时间与平均传输速度
     dt = t1 - t0
