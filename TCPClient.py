@@ -114,7 +114,7 @@ try:
 
     s.close()
 
-except (ConnectionError, FileNotFoundError, KeyboardInterrupt):
+except (ConnectionError, FileNotFoundError, KeyboardInterrupt, TimeoutError):
     print()
     print('transmission failed or cancelled')
     s.close()
